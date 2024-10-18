@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weeks of Your Life</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        
+        .life-grid {
+            display: grid;
+            gap: 2px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .week {
+            width: 10px;
+            height: 10px;
+            background-color: grey;
+        }
+        
+        .past {
+            background-color: green;
+        }
+        
+        .current {
+            background-color: yellow;
+            /* Highlight the current week */
+        }
+        
+        .year-label {
+            position: absolute;
+            left: -40px;
+            font-size: 10px;
+            transform: translateY(-50%);
+        }
+        
+        .label {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="label">
+        <label for="birthDateInput">Enter your birthdate: </label>
+        <input type="date" id="birthDateInput">
+        <button onclick="generateLifeGrid()">Submit</button>
+    </div>
+    <div class="life-grid" id="lifeGrid"></div>
+    <div class="label" id="yearsLeftLabel"></div>
+    <div class="label" id="summary"></div>
+    <script>
+        function isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+        }
+
+        function generateLifeGrid() {
+            const birthDateInput = document.getElementById('birthDateInput').value;
+            if (!birthDateInput) {
+                alert('Please enter your birthdate.');
+                return;
+            }
+            const birthDate = new Date(birthDateInput);
+            const currentDate = new Date();
+            const grid = document.getElementById('lifeGrid');
+            grid.innerHTML = ''; // Clear previous grid
+
+            // Calculate weeks passed, considering leap years
+            const weeksLived = Math.floor((currentDate - birthDate) / (1000 * 60 * 60 * 24 * 7));
+            const currentWeek = weeksLived;
+
+            // Calculate years lived more accurately
+            let yearsLived = currentDate.getFullYear() - birthDate.getFullYear();
+            const hasHadBirthdayThisYear = (currentDate.getMonth() > birthDate.getMonth()) ||
+                (currentDate.getMonth() === birthDate.getMonth() && currentDate.getDate() >= birthDate.getDate());
+            if (!hasHadBirthdayThisYear) {
+                yearsLived--;
+            }
+            const yearsLeft = 100 - yearsLived;
+
+            // Create the grid
+            let weekIndex = 0;
+            for (let year = 0; year < 100; year++) {
+                const weeksInYear = isLeapYear(birthDate.getFullYear() + year) ? 53 : 52;
+                const rowDiv = document.createElement('div');
+                rowDiv.style.display = 'grid';
+                rowDiv.style.gridTemplateColumns = `repeat(${weeksInYear}, 10px)`;
+                rowDiv.style.gap = '2px';
+                rowDiv.style.marginBottom = '2px';
+                for (let week = 0; week < weeksInYear; week++) {
+                    const weekDiv = document.createElement('div');
+                    weekDiv.classList.add('week');
+                    if (weekIndex < weeksLived) {
+                        weekDiv.classList.add('past');
+                    }
+                    if (weekIndex === currentWeek) {
+                        weekDiv.classList.add('current');
+                    }
+                    rowDiv.appendChild(weekDiv);
+                    weekIndex++;
+                }
+
+                // Add year label
+                const yearLabel = document.createElement('div');
+                yearLabel.classList.add('year-label');
+                yearLabel.style.position = 'absolute';
+                yearLabel.style.top = `${year * 14}px`;
+                yearLabel.innerText = year;
+                grid.appendChild(yearLabel);
+                grid.appendChild(rowDiv);
+            }
+
+            // Update labels
+            document.getElementById('yearsLeftLabel').innerText = `Years left: ${yearsLeft}`;
+            document.getElementById('summary').innerText = `You have lived ${weeksLived} weeks,
+You have ${weekIndex - weeksLived} weeks left
+Use them wisely.`;
+        }
+    </script>
+</body>
+
+</html>
